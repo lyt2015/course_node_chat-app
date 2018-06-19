@@ -3,29 +3,30 @@ const http = require('http')
 const express = require('express')
 const socketIO = require('socket.io')
 
+const app = express()
+const server = http.Server(app)
+const io = socketIO(server)
+
 const publicPath = path.join(__dirname, '..', 'public')
 const port = process.env.PORT || 3000
-const app = express()
-const server = http.createServer(app)
-const io = socketIO(server)
 
 app.use(express.static(publicPath))
 
 io.on('connection', socket => {
   console.log('New user connected.')
 
-  socket.emit('newMessage', {
-    from: 'Mary',
-    text: 'Hey, is this good?',
-    createdAt: new Date().getTime()
-  })
-
   socket.on('createMessage', newMessage => {
     console.log('createMessage: ', newMessage)
+
+    io.emit('newMessage', {
+      from: newMessage.from,
+      text: newMessage.text,
+      completedAt: new Date().getTime()
+    })
   })
 
   socket.on('disconnect', () => {
-    console.log('A user disconnected.')
+    console.log('User disconnected')
   })
 })
 
