@@ -17,8 +17,8 @@ describe('generateMessage', () => {
 describe('generateLocationMessage', () => {
   it('should generate correct location object', () => {
     const from = 'Zin'
-    const latitude = 100
-    const longitude = 500
+    const latitude = 45 // range from -90 to 90
+    const longitude = 90 //range from -180 to 180
     const url = `https://www.google.com/maps?q=${latitude},${longitude}`
 
     const locationMessage = generateLocationMessage(from, latitude, longitude)
