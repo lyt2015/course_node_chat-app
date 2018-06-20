@@ -10,7 +10,7 @@ describe('generateMessage', () => {
     const message = generateMessage(from, text)
 
     expect(message).toEqual(expect.objectContaining({ from, text }))
-    expect(message.completedAt).toEqual(expect.any(Number))
+    expect(message.createdAt).toEqual(expect.any(Number))
   })
 })
 
@@ -24,7 +24,7 @@ describe('generateLocationMessage', () => {
     const locationMessage = generateLocationMessage(from, latitude, longitude)
 
     expect(locationMessage).toEqual(expect.objectContaining({ from, url }))
-    expect(locationMessage.completedAt).toEqual(expect.any(Number))
+    expect(locationMessage.createdAt).toEqual(expect.any(Number))
   })
 })
 
