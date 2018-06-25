@@ -1,3 +1,8 @@
+// course : advanced goals
+// 1. make chat room case insensitive
+// 2. make user name unique
+// 3. make all available rooms in the drop down list of join page
+
 const path = require('path')
 const http = require('http')
 const express = require('express')
@@ -25,15 +30,21 @@ io.on('connection', socket => {
       return callback('Name and room required')
     }
 
-    socket.join(params.room)
     users.removeUser(socket.id)
-    users.addUser(socket.id, params.name, params.room)
+    const user = users.addUser(socket.id, params.name, params.room)
+    if (!user) {
+      return callback('This name has been used. Please choose another one.')
+    }
 
-    io.to(params.room).emit('updateUserList', users.getUserList(params.room))
+    socket.join(user.room)
+
+    io.to(user.room).emit('updateUserList', users.getUserList(user.room))
 
     socket.emit('newMessage', generateMessage('Admin', 'Welcome to the chat app'))
 
-    socket.broadcast.to(params.room).emit('newMessage', generateMessage('Admin', `${params.name} has joined.`))
+    socket.broadcast
+      .to(user.room)
+      .emit('newMessage', generateMessage('Admin', `${user.name} has joined.`))
 
     callback()
   })
@@ -44,10 +55,8 @@ io.on('connection', socket => {
     if (user && isRealString(message.text)) {
       io.to(user.room).emit('newMessage', generateMessage(user.name, message.text))
     }
-    // io.emit('newMessage', generateMessage(message.from, message.text))
 
     callback()
-    // socket.broadcast.emit('newMessage', generateMessage(message.from, message.text))
   })
 
   socket.on('createLocationMessage', coords => {
@@ -66,8 +75,15 @@ io.on('connection', socket => {
 
     if (user) {
       io.to(user.room).emit('updateUserList', users.getUserList(user.room))
-      io.to(user.room).emit('newMessage', generateMessage('Admin', `${user.name} has left the room.`))
+      io.to(user.room).emit(
+        'newMessage',
+        generateMessage('Admin', `${user.name} has left the room.`)
+      )
     }
+  })
+
+  socket.on('getRoomList', () => {
+    socket.emit('sendRoomList', users.getRoomList())
   })
 })
 

@@ -1,6 +1,6 @@
 const socket = io()
 
-const params = jQuery.deparam(window.location.search)
+const params = jQuery.deparam(location.search)
 
 function scrollToBottom() {
   // Selectors
@@ -29,9 +29,7 @@ socket.on('connect', function() {
   socket.emit('join', params, function(err) {
     if (err) {
       alert(err)
-      window.location.href = '/'
-    } else {
-      console.log('No error')
+      location.assign('/')
     }
   })
 })
