@@ -1,6 +1,8 @@
+/* global moment, Mustache */
+
 const socket = io()
 
-const params = jQuery.deparam(location.search)
+const params = jQuery.deparam(window.location.search)
 
 function scrollToBottom() {
   // Selectors
@@ -25,86 +27,86 @@ function scrollToBottom() {
   }
 }
 
-socket.on('connect', function() {
-  socket.emit('join', params, function(err) {
+socket.on('connect', () => {
+  socket.emit('join', params, err => {
     if (err) {
-      alert(err)
-      location.assign('/')
+      window.alert(err)
+      window.location.assign('/')
     }
   })
 })
 
-socket.on('disconnect', function() {
+socket.on('disconnect', () => {
   console.log('Disconnected from server.')
 })
 
-socket.on('updateUserList', function(userList) {
+socket.on('updateUserList', userList => {
   const ol = jQuery('<ol></ol>')
 
-  userList.forEach(function(user) {
+  userList.forEach(user => {
     ol.append(jQuery('<li></li>').text(user))
   })
 
   jQuery('#users').html(ol)
 })
 
-socket.on('newMessage', function(message) {
+socket.on('newMessage', message => {
   const formattedTime = moment(message.createdAt).format('h:mm a')
   const template = jQuery('#message-template').html()
   const html = Mustache.render(template, {
     from: message.from,
     text: message.text,
-    createdAt: formattedTime
+    createdAt: formattedTime,
   })
 
   jQuery('#messages').append(html)
   scrollToBottom()
 })
 
-socket.on('newLocationMessage', function(message) {
+socket.on('newLocationMessage', message => {
   const formattedTime = moment(message.createdAt).format('h:mm a')
   const template = jQuery('#location-message-template').html()
   const html = Mustache.render(template, {
     from: message.from,
     url: message.url,
-    createdAt: formattedTime
+    createdAt: formattedTime,
   })
 
   jQuery('#messages').append(html)
   scrollToBottom()
 })
 
-jQuery('#message-form').on('submit', function(e) {
+jQuery('#message-form').on('submit', e => {
   e.preventDefault()
 
   const messageTextbox = jQuery('[name=message]')
 
-  socket.emit('createMessage', { text: messageTextbox.val() }, function() {
+  socket.emit('createMessage', { text: messageTextbox.val() }, () => {
     messageTextbox.val('')
   })
 })
 
 const locationButton = jQuery('#send-location')
-locationButton.on('click', function(e) {
+locationButton.on('click', e => {
   if (!navigator.geolocation) {
-    return alert('Geolocation not supported by your browser.')
+    return window.alert('Geolocation not supported by your browser.')
   }
 
   locationButton.prop('disabled', true).text('Sending Location...')
 
   navigator.geolocation.getCurrentPosition(
-    function(position) {
+    position => {
       socket.emit('createLocationMessage', {
         latitude: position.coords.latitude,
-        longitude: position.coords.longitude
+        longitude: position.coords.longitude,
       })
 
-      setTimeout(function() {
+      setTimeout(() => {
         locationButton.prop('disabled', false).text('Send Location')
       }, 3000)
     },
-    function() {
-      alert('Unable to fetch location.')
+    () => {
+      window.alert('Unable to fetch location.')
     }
   )
 })
